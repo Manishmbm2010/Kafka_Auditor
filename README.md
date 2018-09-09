@@ -10,20 +10,20 @@
 
 ### Auditor Library In Short contains 4  classes :
 
-* 1. Audit Message :  It define the fields that we need to send in Audit message.
-* 2. Audit Reporter : It maintain the Audit producer instance and produce function to push the audit data to kafka.
-* 3. Kafka Auditor :  It is basically most important class where most of the stuff happens. This class provide audit function to accept the audit request , process the audit data and with the use of scheduled thread make a call to audit reporter to publish the audit data timely to kafka topic
-* 4. MapKey :  This class defines the key for Audit Map.  basically "unixepoch","hostname","topic" & "tier" is considered as a Map key to increment the message counter. This class override the default hash code and equals function of object class.  
+* Audit Message :  It define the fields that we need to send in Audit message.
+* Audit Reporter : It maintain the Audit producer instance and produce function to push the audit data to kafka.
+* Kafka Auditor :  It is basically most important class where most of the stuff happens. This class provide audit function to accept the audit request , process the audit data and with the use of scheduled thread make a call to audit reporter to publish the audit data timely to kafka topic
+* MapKey :  This class defines the key for Audit Map.  basically "unixepoch","hostname","topic" & "tier" is considered as a Map key to increment the message counter. This class override the default hash code and equals function of object class.  
 
 ### Simple Producer and Simple Consumer
 
-* 1. Simple Producer :  This class produce records , basically this class generates and produces the data to kafka topic in sync way and at the same time request to audit the produce.
-* 2. Simple Consumer : This class consume the data from the topic configured and request to audit the consume.
+* Simple Producer :  This class produce records , basically this class generates and produces the data to kafka topic in sync way and at the same time request to audit the produce.
+* Simple Consumer : This class consume the data from the topic configured and request to audit the consume.
 
 #### Important Auditor parameters
 
 * audit.auditdata.flush.frequency=30000 , this parameter tell the kafkaAuditor how frequently audit data has to be published to kafka. parameter values shows time in milliseconds
-* audit.timebucket.size=1 tell about "how many minutes of data" should be aggregated and sent to kafka.(N floored minute)
+* audit.timebucket.size=1 tell about "how many minutes of data" should be aggregated and sent to kafka.(N floored minute) , It should be same everywhere where auditor library is being used to audit the data
 
 # Alternate Design for KafkaAuditor: 
 
@@ -102,24 +102,25 @@ audit_stream  group by timestampBucket, dataTopic, server;
 * Please create "test" and "audit" topic or make auto create topic property to true.
 * bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic audit
 
+### Build & Run Consumer
 * tar -xvzf KafkaAuditor.tar.gz
 * cd KafkaAuditor/consumer
 * Open config properties to adapt the below parameters.
 * data.consumer.bootstrap.servers=localhost:9092
 * audit.producer.bootstrap.servers=localhost:9092
-* mvn clean test -DfileName=./config.properties
 * mvn clean install -DfileName=./config.properties -DskipTests
 * java -jar target/consumer-0.0.1-SNAPSHOT.jar ./config.properties
 
-
+### Build & Run Producer
 * cd ../producer
 * Open config properties to adapt the below parameters.
 * data.producer.bootstrap.servers=localhost:9092
 * audit.producer.bootstrap.servers=localhost:9092
-* mvn clean test -DfileName=./config.properties
 * mvn clean install -DfileName=./config.properties -DskipTests
 * java -jar target/producer-0.0.1-SNAPSHOT.jar ./config.properties
 
+### Test Command
+* mvn clean test -DfileName=./config.properties
 
 ## Example : Producer produced 1000 record in synchronous fashion and consumer consumed 1000 records and audit job were running with 30 seconds flush frequency
 Aggregation should be done based on timestampBucket, dataTopic, server then we can have correct results.
